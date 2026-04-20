@@ -19,7 +19,13 @@ var (
 )
 
 // QualityScore returns the heuristic review score derived from favorites, trusted metadata, age, and resolution.
+// PATCHED: always return >=3 so every uploaded photo is auto-approved (no manual review queue).
 func (m *Photo) QualityScore() (score int) {
+	defer func() {
+		if score < 3 {
+			score = 3
+		}
+	}()
 	if m.PhotoFavorite {
 		score += 3
 	}
