@@ -709,10 +709,21 @@ export default {
           this.offset = response.limit;
           this.results = response.models;
           this.semQueryId = response.queryId || null;
-          this.lightbox.results = [];
-          this.lightbox.complete = false;
-          this.complete = response.count < response.limit;
-          this.scrollDisabled = this.complete;
+
+          // For sem: searches, pre-populate the lightbox results so openView can
+          // use them directly without re-firing 30810/search on every click.
+          if (response.queryId) {
+            this.lightbox.results = response.models;
+            this.lightbox.complete = true;
+            this.lightbox.dirty = false;
+            this.complete = true;
+            this.scrollDisabled = true;
+          } else {
+            this.lightbox.results = [];
+            this.lightbox.complete = false;
+            this.complete = response.count < response.limit;
+            this.scrollDisabled = this.complete;
+          }
 
           if (this.complete) {
             if (!this.results.length) {
