@@ -492,18 +492,22 @@ export default {
       // Semantic search: delegate to Photo.search (which handles sem: prefix)
       const q = (params.q || "").trim();
       if (q.toLowerCase().startsWith("sem:")) {
+        console.log("[semantic lightbox] firing", params);
         return Photo.search(params).then((resp) => {
+          console.log("[semantic lightbox] resp", resp);
           if (resp.count === 0) {
             view.$notify.warn(view.$gettext("No pictures found"));
             view.lightbox.dirty = true;
             view.lightbox.complete = false;
+            view.lightbox.results = resp.models;
             return;
           }
           view.lightbox.complete = true;
           view.lightbox.dirty = false;
           view.lightbox.loading = false;
           return view.showThumbs(resp.models, i, { collection, context });
-        }).catch(() => {
+        }).catch((e) => {
+          console.error("[semantic lightbox] error", e);
           view.lightbox.loading = false;
         });
       }
