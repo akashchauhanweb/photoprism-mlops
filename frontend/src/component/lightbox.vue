@@ -497,6 +497,7 @@ export default {
         if (view.lightbox.results && view.lightbox.results.length > 0 && view.lightbox.complete) {
           const cachedIdx = view.lightbox.results.findIndex((p) => p.UID === selected.UID);
           if (cachedIdx > -1) {
+            view.lightbox.loading = false;
             return this.showThumbs(view.lightbox.results, cachedIdx, { collection, context });
           }
         }
@@ -512,6 +513,7 @@ export default {
             view.lightbox.dirty = true;
             view.lightbox.complete = false;
             view.lightbox.results = resp.models;
+            view.lightbox.loading = false;
             return;
           }
           view.lightbox.complete = true;

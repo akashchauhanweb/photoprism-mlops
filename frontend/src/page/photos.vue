@@ -516,6 +516,9 @@ export default {
 
       Photo.search(params)
         .then((response) => {
+          if (response.queryId) {
+            this.semQueryId = response.queryId;
+          }
           this.results = this.dirty ? response.models : Photo.mergeResponse(this.results, response);
           this.complete = response.count < response.limit;
           this.scrollDisabled = this.complete;
