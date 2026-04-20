@@ -505,7 +505,7 @@ export default {
           view.lightbox.complete = true;
           view.lightbox.dirty = false;
           view.lightbox.loading = false;
-          return view.showThumbs(resp.models, index, { collection, context });
+          return this.showThumbs(resp.models, index, { collection, context });
         }).catch((e) => {
           console.error("[semantic lightbox] error", e);
           view.lightbox.loading = false;
