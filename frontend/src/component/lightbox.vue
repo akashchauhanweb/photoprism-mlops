@@ -489,6 +489,26 @@ export default {
       params.count = params.offset + view.lightbox.batchSize;
       params.offset = 0;
 
+      // Semantic search: delegate to Photo.search (which handles sem: prefix)
+      const q = (params.q || "").trim();
+      if (q.toLowerCase().startsWith("sem:")) {
+        return Photo.search(params).then((resp) => {
+          if (resp.count === 0) {
+            view.$notify.warn(view.$gettext("No pictures found"));
+            view.lightbox.dirty = true;
+            view.lightbox.complete = false;
+            return;
+          }
+          view.lightbox.complete = true;
+          view.lightbox.dirty = false;
+          view.lightbox.loading = false;
+          return view.showThumbs(resp.models, i, { collection, context });
+        }).catch(() => {
+          view.lightbox.loading = false;
+        });
+      }
+
+
       // Fetch lightbox results from API.
       return $api
         .get("photos/view", { params })
