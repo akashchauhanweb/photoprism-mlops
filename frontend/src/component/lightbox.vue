@@ -594,8 +594,15 @@ export default {
       const pixels = this.getSlidePixels(model);
 
       // Find thumbnail size that best matches the current slide size and zoom level.
-      const thumb = this.$util.thumb(model.Thumbs, pixels.width, pixels.height);
-
+      // Fall back to per-model thumbnailUrl when Thumbs are absent (e.g. semantic search hits).
+      let thumb;
+      if (model.Thumbs) {
+        thumb = this.$util.thumb(model.Thumbs, pixels.width, pixels.height);
+      } else if (typeof model.thumbnailUrl === "function") {
+        thumb = { src: model.thumbnailUrl("fit_1920"), w: pixels.width, h: pixels.height };
+      } else {
+        thumb = { src: "", w: 0, h: 0 };
+      }
       // Set thumbnail image URL, width, and height.
       const img = {
         src: thumb.src,
