@@ -1263,18 +1263,19 @@ export class Photo extends RestModel {
           return r.json();
         })
         .then((data) => {
-          // Fetch full Photo models for each hit UID in parallel
-          const uids = data.hits.map((h) => h.image_id);
+          const uids = data.hits.map((h) => h.image_id).filter(Boolean);
           if (uids.length === 0) {
             return { models: [], count: 0, limit: topK, offset: 0 };
           }
-          return Promise.all(
-            uids.map((uid) =>
-              $api.get(`photos/${uid}`).then((resp) => new Photo(resp.data)).catch(() => null)
-            )
-          ).then((models) => {
-            const filtered = models.filter((m) => m !== null);
-            return { models: filtered, count: filtered.length, limit: topK, offset: 0 };
+          // Batch-fetch Photo models via native endpoint with uid: filter.
+          // This gives us the full Thumbs/Files shape the UI needs.
+          const nativeParams = { ...params, q: "uid:" + uids.join("|") };
+          delete nativeParams.country;
+          return super.search(nativeParams).then((resp) => {
+            // Preserve search-api ranking order.
+            const byUid = new Map(resp.models.map((m) => [m.UID, m]));
+            const ordered = uids.map((u) => byUid.get(u)).filter(Boolean);
+            return { models: ordered, count: ordered.length, limit: topK, offset: 0 };
           });
         });
     }
