@@ -495,6 +495,10 @@ export default {
         console.log("[semantic lightbox] firing", params);
         return Photo.search(params).then((resp) => {
           console.log("[semantic lightbox] resp", resp);
+          console.log("[semantic lightbox] first model:", resp.models[0]);
+          console.log("[semantic lightbox] first Thumbs:", resp.models[0]?.Thumbs);
+          console.log("[semantic lightbox] first Hash:", resp.models[0]?.Hash);
+          console.log("[semantic lightbox] first Files:", resp.models[0]?.Files);
           if (resp.count === 0) {
             view.$notify.warn(view.$gettext("No pictures found"));
             view.lightbox.dirty = true;
