@@ -218,6 +218,10 @@ func ImportWorker(jobs <-chan ImportJob) {
 					if albumErr := entity.AddPhotoToUserAlbums(photoUID, opt.Albums, imp.conf.Settings().Albums.Order.Album, opt.UID); albumErr != nil {
 						log.Warn(albumErr)
 					}
+					// Fire async ingest webhook for semantic search pipeline.
+					if res.Status == IndexAdded {
+						FireIngestWebhook(res.PhotoUID, originalName, res.FileUID)
+					}
 				}
 			} else {
 				log.Warnf("import: no main media file found for %s, creation of a preview image may have failed", clean.Log(f.RootRelName()))

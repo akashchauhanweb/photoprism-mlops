@@ -1,0 +1,8 @@
+FROM photoprism/develop:noble AS tflib
+
+FROM photoprism/photoprism:latest
+COPY --from=tflib /usr/lib/libtensorflow.so.2 /usr/lib/libtensorflow.so.2
+COPY --from=tflib /usr/lib/libtensorflow_framework.so.2 /usr/lib/libtensorflow_framework.so.2
+RUN ldconfig
+COPY --chown=root:root photoprism-bin /opt/photoprism/bin/photoprism
+RUN chmod +x /opt/photoprism/bin/photoprism
