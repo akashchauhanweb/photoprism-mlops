@@ -1245,6 +1245,44 @@ export class Photo extends RestModel {
     });
   }
 
+  static search(params) {
+    // Semantic search via search-api when query starts with "sem:"
+    const q = (params.q || "").trim();
+    if (q.toLowerCase().startsWith("sem:")) {
+      const query = q.slice(4).trim();
+      const topK = params.count || 50;
+      const searchApiUrl = `http://${window.location.hostname}:30810/search`;
+
+      return fetch(searchApiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, top_k: topK }),
+      })
+        .then((r) => {
+          if (!r.ok) throw new Error(`search-api: ${r.status}`);
+          return r.json();
+        })
+        .then((data) => {
+          // Fetch full Photo models for each hit UID in parallel
+          const uids = data.hits.map((h) => h.image_id);
+          if (uids.length === 0) {
+            return { models: [], count: 0, limit: topK, offset: 0 };
+          }
+          return Promise.all(
+            uids.map((uid) =>
+              $api.get(`photos/${uid}`).then((resp) => new Photo(resp.data)).catch(() => null)
+            )
+          ).then((models) => {
+            const filtered = models.filter((m) => m !== null);
+            return { models: filtered, count: filtered.length, limit: topK, offset: 0 };
+          });
+        });
+    }
+
+    // Fall back to native PhotoPrism search
+    return super.search(params);
+  }
+
   static batchSize() {
     return BatchSize;
   }
