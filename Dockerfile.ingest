@@ -6,3 +6,4 @@ COPY --from=tflib /usr/lib/libtensorflow_framework.so.2 /usr/lib/libtensorflow_f
 RUN ldconfig
 COPY --chown=root:root photoprism-bin /opt/photoprism/bin/photoprism
 RUN chmod +x /opt/photoprism/bin/photoprism
+COPY --chown=root:root assets/static/build /opt/photoprism/assets/static/build
