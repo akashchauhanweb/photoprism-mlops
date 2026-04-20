@@ -1263,9 +1263,10 @@ export class Photo extends RestModel {
           return r.json();
         })
         .then((data) => {
+          const queryId = data.query_id || null;
           const uids = data.hits.map((h) => h.image_id).filter(Boolean);
           if (uids.length === 0) {
-            return { models: [], count: 0, limit: topK, offset: 0 };
+            return { models: [], count: 0, limit: topK, offset: 0, queryId };
           }
           // Batch-fetch Photo models via native endpoint with uid: filter.
           // This gives us the full Thumbs/Files shape the UI needs.
@@ -1275,7 +1276,7 @@ export class Photo extends RestModel {
             // Preserve search-api ranking order.
             const byUid = new Map(resp.models.map((m) => [m.UID, m]));
             const ordered = uids.map((u) => byUid.get(u)).filter(Boolean);
-            return { models: ordered, count: ordered.length, limit: topK, offset: 0 };
+            return { models: ordered, count: ordered.length, limit: topK, offset: 0, queryId };
           });
         });
     }
