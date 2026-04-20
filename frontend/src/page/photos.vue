@@ -176,6 +176,7 @@ export default {
         dirty: false,
         batchSize: batchSize * 4,
       },
+      semQueryId: null,
     };
   },
   computed: {
@@ -458,6 +459,19 @@ export default {
 
       const selected = this.results[index];
 
+      // Record semantic search click feedback when query_id is available.
+      if (this.semQueryId && selected.UID) {
+        fetch(`http://${window.location.hostname}:30810/click`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query_id: this.semQueryId, image_id: selected.UID }),
+        }).catch(() => {});
+      }
+
+      // Set lightbox.open before openView to prevent the route watcher from
+      // re-triggering the sem: search while the lightbox is opening.
+      this.lightbox.open = true;
+
       // Do not open as stack if there is only one JPEG or if multiple pictures are selected.
       if (this.selection.length > 0 || selected.jpegFiles().length < 2) {
         showMerged = false;
@@ -694,6 +708,7 @@ export default {
 
           this.offset = response.limit;
           this.results = response.models;
+          this.semQueryId = response.queryId || null;
           this.lightbox.results = [];
           this.lightbox.complete = false;
           this.complete = response.count < response.limit;
