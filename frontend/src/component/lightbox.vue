@@ -492,6 +492,14 @@ export default {
       // Semantic search: delegate to Photo.search (which handles sem: prefix)
       const q = (params.q || "").trim();
       if (q.toLowerCase().startsWith("sem:")) {
+        // Reuse cached results if we've already fetched them for the same query
+        // and the clicked photo is in them. Avoids refiring /search on every click.
+        if (view.lightbox.results && view.lightbox.results.length > 0 && view.lightbox.complete) {
+          const cachedIdx = view.lightbox.results.findIndex((p) => p.UID === selected.UID);
+          if (cachedIdx > -1) {
+            return this.showThumbs(view.lightbox.results, cachedIdx, { collection, context });
+          }
+        }
         console.log("[semantic lightbox] firing", params);
         return Photo.search(params).then((resp) => {
           console.log("[semantic lightbox] resp", resp);
