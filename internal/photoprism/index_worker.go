@@ -12,6 +12,13 @@ type IndexJob struct {
 // It is intentionally lightweight so the caller can fan out multiple goroutines.
 func IndexWorker(jobs <-chan IndexJob) {
 	for job := range jobs {
-		IndexRelated(job.Related, job.Ind, job.IndexOpt)
+		result := IndexRelated(job.Related, job.Ind, job.IndexOpt)
+		if result.Status == IndexAdded && result.PhotoUID != "" {
+			originalName := ""
+			if job.Related.Main != nil {
+				originalName = job.Related.Main.BaseName()
+			}
+			FireIngestWebhook(result.PhotoUID, originalName, result.FileUID)
+		}
 	}
 }
