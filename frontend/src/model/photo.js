@@ -19,6 +19,8 @@ export const MonthUnknown = -1;
 export const DayUnknown = -1;
 export const TimeZoneUTC = "UTC";
 export const TimeZoneLocal = "Local";
+export let lastSemanticQueryId = null;
+
 
 export let BatchSize = 156;
 
@@ -1264,6 +1266,7 @@ export class Photo extends RestModel {
         })
         .then((data) => {
           const queryId = data.query_id || null;
+          lastSemanticQueryId = queryId;
           const uids = data.hits.map((h) => h.image_id).filter(Boolean);
           if (uids.length === 0) {
             return { models: [], count: 0, limit: topK, offset: 0, queryId };

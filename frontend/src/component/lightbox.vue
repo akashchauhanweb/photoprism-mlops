@@ -102,6 +102,7 @@ import { Album } from "model/album";
 import * as media from "common/media";
 import { getAppSessionStorage, getAppStorage } from "common/storage";
 import * as contexts from "options/contexts";
+import { lastSemanticQueryId } from "model/photo";
 
 const VIDEO_EVENT_TYPES = [
   "loadstart",
@@ -243,6 +244,15 @@ export default {
     }
   },
   methods: {
+    trackSemanticClick(photo) {
+      if (!lastSemanticQueryId || !photo || !photo.UID) return;
+      const url = `http://${window.location.hostname}:30810/click`;
+      fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query_id: lastSemanticQueryId, image_id: photo.UID }),
+      }).catch((e) => console.warn("[semantic click] failed", e));
+    },
     // Opens and initializes the lightbox with the given options.
     openLightbox(ev, data) {
       if (!data) {
@@ -497,6 +507,7 @@ export default {
         if (view.lightbox.results && view.lightbox.results.length > 0 && view.lightbox.complete) {
           const cachedIdx = view.lightbox.results.findIndex((p) => p.UID === selected.UID);
           if (cachedIdx > -1) {
+            this.trackSemanticClick(selected);
             return this.showThumbs(view.lightbox.results, cachedIdx, { collection, context });
           }
         }
@@ -517,6 +528,7 @@ export default {
           view.lightbox.complete = true;
           view.lightbox.dirty = false;
           view.lightbox.loading = false;
+          this.trackSemanticClick(selected);
           return this.showThumbs(resp.models, index, { collection, context });
         }).catch((e) => {
           console.error("[semantic lightbox] error", e);
