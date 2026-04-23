@@ -291,6 +291,44 @@ $config.update().finally(() => {
   // Mount to #app.
   app.mount("#app");
 
+  // ---- Semantic-search retrain-state poller -----------------------------
+  // Polls /retrain-state every 30s. Logs only on changes. No-op on error.
+  let _lastRetrainState = null;
+  function _pollRetrainState() {
+    const url = `http://${window.location.hostname}:30810/retrain-state`;
+    fetch(url)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((state) => {
+        if (!state) return;
+        const key = JSON.stringify({
+          untrained: state.untrained_count,
+          trainer: state.trainer || {},
+        });
+        if (key !== _lastRetrainState) {
+          _lastRetrainState = key;
+          const { untrained_count, threshold, trainer } = state;
+          const t = trainer || {};
+          if (t.is_training) {
+            console.info(
+              `[retrain] TRAINING — run=${t.current_run || "?"} started=${t.started_at || "?"} mlflow_run_id=${t.mlflow_run_id || "?"}`
+            );
+          } else if (t.error) {
+            console.warn(`[retrain] trainer unreachable: ${t.error}`);
+          } else {
+            console.info(
+              `[retrain] idle — untrained=${untrained_count}/${threshold} last_run=${t.last_run || "none"}`
+            );
+          }
+        }
+      })
+      .catch(() => {});
+  }
+  if (!window.__retrainPollerStarted) {
+    window.__retrainPollerStarted = true;
+    _pollRetrainState();
+    setInterval(_pollRetrainState, 30000);
+  }
+
   // Allows the application to be installed as a PWA.
   registerServiceWorker(typeof navigator === "undefined" ? undefined : navigator, $config, $log);
 });
