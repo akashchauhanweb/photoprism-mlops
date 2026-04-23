@@ -310,7 +310,7 @@ $config.update().finally(() => {
           const t = trainer || {};
           if (t.is_training) {
             console.info(
-              `[retrain] TRAINING — run=${t.current_run || "?"} started=${t.started_at || "?"} mlflow_run_id=${t.mlflow_run_id || "?"}`
+              `[retrain] TRAINING — run_name=${t.run_name || "?"} run_id=${t.run_id || "?"} started=${t.started_at || "?"}`
             );
           } else if (t.error) {
             console.warn(`[retrain] trainer unreachable: ${t.error}`);
