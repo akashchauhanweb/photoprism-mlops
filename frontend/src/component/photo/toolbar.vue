@@ -31,7 +31,7 @@
           autocomplete="off"
           prepend-inner-icon="mdi-tune"
           :append-inner-icon="filter.latlng ? 'mdi-map-marker-off' : ''"
-          :placeholder="$gettext('Search')"
+          :placeholder="$gettext('Search · prefix "sem:" for semantic')"
           class="input-search background-inherit elevation-0"
           :class="{ 'input-search--expanded': expanded }"
           @update:model-value="
